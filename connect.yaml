@@ -23,15 +23,15 @@ deployAs:
           required: true
         - key: CORS_ALLOWED_ORIGINS
           description: Comma separated list of allowed origins
-          default: localhost:3000,localhost:5173,commercetools.com,frontend.site
+          default: "localhost:3000,localhost:5173,commercetools.com,frontend.site"
           required: false
         - key: AI_PROVIDER
           description: AI provider to use (anthropic, openai)
-          default: anthropic
+          default: "anthropic"
           required: true
         - key: AI_MODEL
           description: AI model to use
-          default: claude-3-7-sonnet-20250219
+          default: "claude-3-7-sonnet-20250219"
           required: true
         - key: AVAILABLE_ACTIONS
           description: Available actions (json stringified array)
@@ -39,7 +39,7 @@ deployAs:
           required: true
         - key: MAX_STEPS
           description: Maximum number of steps for tool execution
-          default: 25
+          default: "25"
           required: false
         - key: SYSTEM_PROMPT
           description: System prompt
