@@ -51,8 +51,8 @@ export const createCommercetoolsAgentToolkit = (
   apiUrl: string,
   availableActions: Object,
   context: {
-    customerId: string,
-    cartId: string,
+    customerId: string;
+    cartId: string;
   }
 ) => {
   return new CommercetoolsAgentToolkit({
@@ -64,8 +64,8 @@ export const createCommercetoolsAgentToolkit = (
 
     configuration: {
       context: {
-        ...(context.customerId && {customerId: context.customerId}),
-        ...(context.cartId && {cartId: context.cartId}),
+        ...(context.customerId && { customerId: context.customerId }),
+        ...(context.cartId && { cartId: context.cartId }),
       },
       actions: availableActions,
     },
@@ -74,8 +74,17 @@ export const createCommercetoolsAgentToolkit = (
 
 export const post = async (request: Request, response: Response) => {
   try {
-    if (!process.env.CTP_CLIENT_ID || !process.env.CTP_CLIENT_SECRET || !process.env.CTP_AUTH_URL || !process.env.CTP_PROJECT_KEY || !process.env.CTP_API_URL || !process.env.AVAILABLE_ACTIONS) {
-      return response.status(500).json({ error: 'Missing required environment variables' });
+    if (
+      !process.env.CTP_CLIENT_ID ||
+      !process.env.CTP_CLIENT_SECRET ||
+      !process.env.CTP_AUTH_URL ||
+      !process.env.CTP_PROJECT_KEY ||
+      !process.env.CTP_API_URL ||
+      !process.env.AVAILABLE_ACTIONS
+    ) {
+      return response
+        .status(500)
+        .json({ error: 'Missing required environment variables' });
     }
     if (!process.env.AI_MODEL) {
       return response.status(500).json({ error: 'AI_MODEL is not set' });
@@ -84,18 +93,17 @@ export const post = async (request: Request, response: Response) => {
       return response.status(500).json({ error: 'AI_PROVIDER is not set' });
     }
 
-    
     const { messages } = request.body as { messages: CoreMessage[] };
-  
+
     if (!messages) {
       return response.status(400).json({ error: 'Messages are required' });
     }
-    
-    
+
     const { customerId, cartId } = request.query;
-    const availableActions = parseAvailableActions(process.env.AVAILABLE_ACTIONS);
-    
-  
+    const availableActions = parseAvailableActions(
+      process.env.AVAILABLE_ACTIONS
+    );
+
     const commercetoolsAgentToolkit = createCommercetoolsAgentToolkit(
       process.env.CTP_CLIENT_ID,
       process.env.CTP_CLIENT_SECRET,
@@ -105,25 +113,26 @@ export const post = async (request: Request, response: Response) => {
       availableActions,
       { customerId: customerId as string, cartId: cartId as string }
     );
-  
+
     logger.info(`commercetoolsAgentToolkit initialized`);
-  
+
     await commercetoolsAgentToolkit.authenticateCustomer();
     logger.info(`commercetoolsAgentToolkit authenticated`);
-    
+
     // Get the model instance from the ModelProvider
     const model = ModelProvider.getInstance().getModel();
-  
-    const tools = injectNavigationTools(commercetoolsAgentToolkit.getTools());
 
+    const tools = injectNavigationTools(commercetoolsAgentToolkit.getTools());
 
     pipeDataStreamToResponse(response, {
       status: 200,
       statusText: 'OK',
-      execute: async dataStreamWriter => {
+      execute: async (dataStreamWriter) => {
         const result = streamText({
           model: model,
-          system: process.env.SYSTEM_PROMPT || `You are a helpful shopping assistant that can access Commercetools data. 
+          system:
+            process.env.SYSTEM_PROMPT ||
+            `You are a helpful shopping assistant that can access Commercetools data. 
               Your primary goal is to help the user shop for products.
               When interacting with carts: 
               - If the user wants to view or modify an *existing* cart, ask for the cart ID or key before using 'read_cart' or 'update_cart'. 
@@ -135,25 +144,24 @@ export const post = async (request: Request, response: Response) => {
           tools,
           maxSteps: parseInt(process.env.MAX_STEPS || '25'),
         });
-        
+
         result.mergeIntoDataStream(dataStreamWriter, {
           sendUsage: true,
           sendReasoning: true,
         });
       },
-      onError: error => {
+      onError: (error) => {
         logger.error('Error in streaming response:', error);
-        response.status(500).json({ 
-          error: 'Failed to process chat request: ' + errorHandler(error) 
+        response.status(500).json({
+          error: 'Failed to process chat request: ' + errorHandler(error),
         });
         return error instanceof Error ? error.message : String(error);
       },
     });
-    
   } catch (error) {
     console.error('Error processing chat request:', error);
-    return response.status(500).json({ 
-      error: 'Failed to process chat request: ' + errorHandler(error) 
+    return response.status(500).json({
+      error: 'Failed to process chat request: ' + errorHandler(error),
     });
   }
 };

@@ -1,15 +1,17 @@
-import {  tool } from 'ai';
+import { tool } from 'ai';
 import { z } from 'zod';
 
 const navigateToProductTool = tool({
-  description: 'Navigate to a specific product details page or PDP by product SKU',
+  description:
+    'Navigate to a specific product details page or PDP by product SKU',
   parameters: z.object({
     sku: z.string().describe('The sku of the product to navigate to'),
   }),
 });
 
 const navigateToProductListTool = tool({
-  description: 'Navigate to a specific product list page or PLP by category key',
+  description:
+    'Navigate to a specific product list page or PLP by category key',
   parameters: z.object({
     categoryKey: z.string().describe('The key of the category to navigate to'),
   }),
@@ -35,12 +37,10 @@ const navigateToCheckoutTool = tool({
 export const injectNavigationTools = (tools: Record<string, any>) => {
   return {
     ...tools,
-    'navigateToProduct': navigateToProductTool,
-    'navigateToProductList': navigateToProductListTool,
-    'navigateToSearchResults': navigateToSearchResultsTool,
-    'navigateToCart': navigateToCartTool,
-    'navigateToCheckout': navigateToCheckoutTool,
+    navigateToProduct: navigateToProductTool,
+    navigateToProductList: navigateToProductListTool,
+    navigateToSearchResults: navigateToSearchResultsTool,
+    navigateToCart: navigateToCartTool,
+    navigateToCheckout: navigateToCheckoutTool,
   };
 };
-
-

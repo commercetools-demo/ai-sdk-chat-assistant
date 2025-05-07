@@ -34,8 +34,10 @@ class ModelProvider {
           : createAnthropic({
               apiKey: process.env.ANTHROPIC_API_KEY,
             })(process.env.AI_MODEL);
-      
-      logger.info(`AI model initialized with provider: ${process.env.AI_PROVIDER}, model: ${process.env.AI_MODEL}`);
+
+      logger.info(
+        `AI model initialized with provider: ${process.env.AI_PROVIDER}, model: ${process.env.AI_MODEL}`
+      );
     } catch (error) {
       logger.error(`Failed to initialize AI model: ${error}`);
       throw error;
@@ -50,4 +52,4 @@ class ModelProvider {
   }
 }
 
-export default ModelProvider; 
+export default ModelProvider;
