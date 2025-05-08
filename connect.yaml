@@ -54,3 +54,6 @@ deployAs:
         - key: OPENAI_API_KEY
           description: OpenAI API key
           required: false
+        - key: JWT_SECRET
+          description: JWT secret
+          required: true

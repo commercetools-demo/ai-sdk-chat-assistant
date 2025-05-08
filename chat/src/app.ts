@@ -12,6 +12,7 @@ import { errorMiddleware } from './middleware/error.middleware';
 import { extractMainDomain } from './domain';
 import { logger } from './utils/logger.utils';
 import ModelProvider from './services/modelProvider';
+import { genericAtuhCheck } from './middleware/authorize-context';
 
 // Initialize the ModelProvider
 try {
@@ -45,11 +46,7 @@ app.use(
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// app.use((req, res, next) => {
-//   res.setHeader('Content-Type', 'application/octet-stream');
-
-// });
-
+app.use(genericAtuhCheck);
 // Define routes
 app.use('/chat', ChatRoutes);
 app.use('*', () => {
