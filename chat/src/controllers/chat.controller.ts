@@ -22,7 +22,7 @@ export function errorHandler(error: unknown) {
 }
 
 /**
- * Safely parses the AVAILABLE_ACTIONS environment variable
+ * Safely parses the AVAILABLE_TOOLS environment variable
  * Handles both regular JSON and escaped JSON strings
  */
 export function parseAvailableActions(availableActionsStr: string): Object {
@@ -37,7 +37,7 @@ export function parseAvailableActions(availableActionsStr: string): Object {
       return JSON.parse(unescaped);
     } catch (nestedError) {
       // If both parsing attempts fail, log the error and return an empty object
-      logger.error(`Failed to parse AVAILABLE_ACTIONS: ${availableActionsStr}`);
+      logger.error(`Failed to parse AVAILABLE_TOOLS: ${availableActionsStr}`);
       return {};
     }
   }
@@ -53,6 +53,7 @@ export const createCommercetoolsAgentToolkit = (
   context: {
     customerId: string;
     cartId: string;
+    isAdmin?: string;
   }
 ) => {
   return new CommercetoolsAgentToolkit({
@@ -66,6 +67,7 @@ export const createCommercetoolsAgentToolkit = (
       context: {
         ...(context.customerId && { customerId: context.customerId }),
         ...(context.cartId && { cartId: context.cartId }),
+        ...(context.isAdmin && { isAdmin: context.isAdmin === 'true' }),
       },
       actions: availableActions,
     },
@@ -80,7 +82,7 @@ export const post = async (request: Request, response: Response) => {
       !process.env.CTP_AUTH_URL ||
       !process.env.CTP_PROJECT_KEY ||
       !process.env.CTP_API_URL ||
-      !process.env.AVAILABLE_ACTIONS
+      !process.env.AVAILABLE_TOOLS
     ) {
       return response
         .status(500)
@@ -99,9 +101,9 @@ export const post = async (request: Request, response: Response) => {
       return response.status(400).json({ error: 'Messages are required' });
     }
 
-    const { customerId, cartId } = request.query;
+    const { customerId, cartId, isAdmin } = request.query;
     const availableActions = parseAvailableActions(
-      process.env.AVAILABLE_ACTIONS
+      process.env.AVAILABLE_TOOLS
     );
 
     const commercetoolsAgentToolkit = createCommercetoolsAgentToolkit(
@@ -111,12 +113,18 @@ export const post = async (request: Request, response: Response) => {
       process.env.CTP_PROJECT_KEY,
       process.env.CTP_API_URL,
       availableActions,
-      { customerId: customerId as string, cartId: cartId as string }
+      { customerId: customerId as string, cartId: cartId as string, isAdmin: isAdmin as string }
     );
 
     logger.info(`commercetoolsAgentToolkit initialized`);
 
-    await commercetoolsAgentToolkit.authenticateCustomer();
+    if (isAdmin === 'true' && process.env.IS_ADMIN_ENABLED === 'true') {
+      logger.info(`authenticating as admin`);
+      await commercetoolsAgentToolkit.authenticateAdmin();
+    } else {
+      logger.info(`authenticating as customer`);
+      await commercetoolsAgentToolkit.authenticateCustomer();
+    }
     logger.info(`commercetoolsAgentToolkit authenticated`);
 
     // Get the model instance from the ModelProvider
