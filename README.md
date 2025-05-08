@@ -1,3 +1,5 @@
+## ***NOTE***: This is NOT an official commercetools code and NOT production ready. Use it at your own risk
+
 <p align="center">
   <a href="https://commercetools.com/">
     <img alt="commercetools logo" src="https://unpkg.com/@commercetools-frontend/assets/logos/commercetools_primary-logo_horizontal_RGB.png">
