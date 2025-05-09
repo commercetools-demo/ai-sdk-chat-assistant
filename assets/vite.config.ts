@@ -18,9 +18,10 @@ export default defineConfig({
       formats: ['es', 'umd'],
       fileName: (format) => `index.${format === 'es' ? 'mjs' : 'js'}`,
     },
+    // For the demo version - bundle dependencies
     rollupOptions: {
-      external: ['react', 'react-dom', '@ai-sdk/react'],
       output: {
+        // Include React and @ai-sdk/react for easier demo usage
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
