@@ -1,6 +1,4 @@
 deployAs:
-  - name: assets
-    applicationType: assets
   - name: chat
     applicationType: service
     endpoint: /chat
